@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherAPI Interface</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #5D3FD3, #7B68EE);
+      height: 100vh;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center font-sans">
+
+  <div class="card w-full max-w-md text-center">
+    <h1 class="text-2xl font-bold text-blue-600 mb-1">🌦️ Cek Cuaca Lokasi (WeatherAPI)</h1>
+    <p id="datetime" class="text-gray-500 mb-4"></p>
+
+    <!-- Input Lokasi -->
+    <div class="flex justify-center mb-4">
+      <input id="lokasi" type="text" placeholder="Masukkan nama kota atau kecamatan"
+             class="border rounded-md px-3 py-2 mr-2 w-2/3 text-center">
+      <button onclick="cariCuaca()" 
+              class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Cari</button>
+    </div>
+
+    <!-- Hasil Cuaca -->
+    <div id="hasil" class="bg-white bg-opacity-80 rounded-xl p-4 text-left">
+      <p>🌐 <b>Negara:</b> <span id="negara">-</span></p>
+      <p>🗺️ <b>Provinsi:</b> <span id="provinsi">-</span></p>
+      <p>🏘️ <b>Kecamatan/Kota:</b> <span id="kecamatan">-</span></p>
+      <p>🌡️ <b>Suhu:</b> <span id="suhu">-</span></p>
+      <p>📍 <b>Longitude:</b> <span id="long">-</span></p>
+      <p>📍 <b>Latitude:</b> <span id="lat">-</span></p>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "90bc7fa7d64d469aaab140324250710";
+
+    // Waktu dan tanggal dinamis
+    function updateDateTime() {
+      const now = new Date();
+      const options = {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false, timeZone: 'Asia/Jakarta'
+      };
+      document.getElementById('datetime').innerText =
+        now.toLocaleDateString('id-ID', options) + " WIB";
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // Fungsi ambil data cuaca dari WeatherAPI
+    async function cariCuaca() {
+      const lokasi = document.getElementById('lokasi').value.trim();
+      if (!lokasi) {
+        alert("Masukkan nama lokasi terlebih dahulu!");
+        return;
+      }
+
+      const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(lokasi)}&lang=id`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Lokasi tidak ditemukan");
+        const data = await response.json();
+
+        // Menampilkan hasil
+        document.getElementById("negara").innerText = data.location.country || "-";
+        document.getElementById("provinsi").innerText = data.location.region || "-";
+        document.getElementById("kecamatan").innerText = data.location.name || "-";
+        document.getElementById("suhu").innerText = `${data.current.temp_c} °C`;
+        document.getElementById("long").innerText = data.location.lon;
+        document.getElementById("lat").innerText = data.location.lat;
+
+      } catch (error) {
+        alert("Gagal mendapatkan data cuaca: " + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
